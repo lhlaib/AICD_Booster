@@ -16,7 +16,7 @@
   for building a <b>standardized IC design server environment</b> on <b>Rocky Linux 8</b>.
 </p>
 
-中文版說明請見： [README.zh-tw.md](README.zh-tw.md)
+中文版說明請見： [README.zh-tw.md](.README.zh-tw.md)
 
 ---
 
