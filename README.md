@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-    中文版說明請見：<a href="./README.zh-tw.md">  README.zh-tw.md</a>
+    中文版說明請見：<a href="./docs/zh-tw/README.md">  README.zh-tw.md</a>
 </p>
 
 ---
