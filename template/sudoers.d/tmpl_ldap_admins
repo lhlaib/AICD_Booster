@@ -1,0 +1,6 @@
+# Password-free sudo
+# Assign groups
+${SUDOERSD_GROUP_LIST_TMP}
+
+# Assign users
+${SUDOERSD_USER_LIST_TMP}

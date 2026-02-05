@@ -1,0 +1,2 @@
+# Self-defined extension for vscode
+${VSCODE_EXT_LIST_TMP}

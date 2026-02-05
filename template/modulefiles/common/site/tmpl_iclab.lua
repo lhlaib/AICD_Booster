@@ -1,0 +1,10 @@
+help([[ICLAB site defaults]])
+whatis("ICLAB site defaults")
+setenv("LANG","C")
+setenv("LC_ALL","C")
+ prepend_path("LD_LIBRARY_PATH", "/lib64")
+prepend_path("PATH","/usr/sbin")
+prepend_path("PATH","/usr/bin")
+depends_on("license/all")
+-- 如需： setenv("QT_QPA_PLATFORM","xcb")
+

@@ -1,0 +1,129 @@
+#!/bin/bash
+# ============================================================
+#  Remote Desktop - Visual Task Manager
+#  Platform: Rocky Linux 8
+# ============================================================
+
+BOLD=$(tput bold)
+REV=$(tput rev)
+RED='\033[1;31m'
+GREEN='\033[1;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[1;34m'
+CYAN='\033[1;36m'
+NC='\033[0m'
+
+TARGET_USER=${1:-$(whoami)}
+PAGE_SIZE=10
+PAGE_OFFSET=0
+SELECTED_INDEX=0
+
+tput civis
+trap "tput cnorm; exit" INT TERM EXIT
+
+function show_help() {
+    tput cnorm
+    clear
+    echo -e "${BLUE}======================================================${NC}"
+    echo -e "${BOLD}             HELP: VISUAL TASK MANAGER                ${NC}"
+    echo -e "${BLUE}======================================================${NC}"
+    echo ""
+    echo -e "  ${BOLD}Navigation Control:${NC}"
+    echo -e "  ${CYAN}Arrow Up/Down${NC}    : Move selection bar"
+    echo -e "  ${CYAN}Arrow Left/Right${NC} : Switch between pages"
+    echo -e "  ${CYAN}Enter${NC}            : Kill the highlighted process"
+    echo ""
+    echo -e "  ${BOLD}Status Keys:${NC}"
+    echo -e "  ${CYAN}h${NC} : Show this Help screen"
+    echo -e "  ${CYAN}q${NC} : Back to Manager / Quit"
+    echo -e "  ${CYAN}x${NC} : Exit Program"
+    echo ""
+    echo -e "  Processes are sorted by ${YELLOW}%CPU usage${NC} by default."
+    echo ""
+    echo -e "  Press any key to return..."
+    read -n 1 -s
+    tput civis
+}
+
+while true; do
+    mapfile -t PROC_LIST < <(ps -u "$TARGET_USER" -o pid,%cpu,%mem,time,comm --sort=-%cpu --no-headers | grep -vE "ps|grep|bash|sshd|sftp|visual_task")
+    TOTAL_PROCS=${#PROC_LIST[@]}
+
+    clear
+    echo -e "${BLUE}======================================================${NC}"
+    echo -e "${BOLD}             VISUAL TASK MANAGER (Interactive)        ${NC}"
+    echo -e "${BLUE}======================================================${NC}"
+    echo -e "  User: ${CYAN}${BOLD}$TARGET_USER${NC} | Total Processes: $TOTAL_PROCS"
+    echo ""
+    echo -e "${BOLD}   PID     %CPU   %MEM   TIME      COMMAND${NC}"
+    echo -e "${BLUE}  --------------------------------------------------${NC}"
+
+    COUNT=0
+    ACTUAL_PAGE_COUNT=0
+    for (( i=$PAGE_OFFSET; i<$PAGE_OFFSET+$PAGE_SIZE; i++ )); do
+        if [ $i -ge $TOTAL_PROCS ]; then break; fi
+        LINE=${PROC_LIST[$i]}
+        PID=$(echo $LINE | awk '{print $1}')
+        CPU=$(echo $LINE | awk '{print $2}')
+        MEM=$(echo $LINE | awk '{print $3}')
+        TIME=$(echo $LINE | awk '{print $4}')
+        COMM=$(echo $LINE | awk '{print $5}')
+
+        if [ $COUNT -eq $SELECTED_INDEX ]; then
+            printf "${REV}   %-7s %-6s %-6s %-9s %-15s ${NC}\n" "$PID" "$CPU" "$MEM" "$TIME" "$COMM"
+        else
+            printf "   %-7s %-6s %-6s %-9s %-15s \n" "$PID" "$CPU" "$MEM" "$TIME" "$COMM"
+        fi
+        ((COUNT++))
+        ((ACTUAL_PAGE_COUNT++))
+    done
+
+    for (( j=$COUNT; j<$PAGE_SIZE; j++ )); do echo ""; done
+    echo -e "${BLUE}  --------------------------------------------------${NC}"
+    echo -e "  Page: $(( (PAGE_OFFSET/PAGE_SIZE) + 1 )) / $(( (TOTAL_PROCS/PAGE_SIZE) + 1 ))"
+    echo -e "  ${CYAN}[h]${NC} Help | ${CYAN}[q]${NC} Back | ${CYAN}[x]${NC} Exit"
+
+    read -rsn1 input
+    if [[ "$input" == $'\x1b' ]]; then
+        read -rsn2 -t 0.1 input
+        case "$input" in
+            '[A') [ $SELECTED_INDEX -gt 0 ] && ((SELECTED_INDEX--)) ;;
+            '[B') [ $SELECTED_INDEX -lt $((ACTUAL_PAGE_COUNT - 1)) ] && ((SELECTED_INDEX++)) ;;
+            '[C') 
+                if [ $((PAGE_OFFSET + PAGE_SIZE)) -lt $TOTAL_PROCS ]; then
+                    PAGE_OFFSET=$((PAGE_OFFSET + PAGE_SIZE))
+                    SELECTED_INDEX=0
+                fi ;;
+            '[D') 
+                if [ $PAGE_OFFSET -gt 0 ]; then
+                    PAGE_OFFSET=$((PAGE_OFFSET - PAGE_SIZE))
+                    SELECTED_INDEX=0
+                fi ;;
+        esac
+    elif [[ "$input" == "" ]]; then
+        REAL_IDX=$((PAGE_OFFSET + SELECTED_INDEX))
+        TARGET_LINE=${PROC_LIST[$REAL_IDX]}
+        T_PID=$(echo $TARGET_LINE | awk '{print $1}')
+        T_NAME=$(echo $TARGET_LINE | awk '{print $5}')
+        
+        tput cnorm
+        echo -ne "\n  ${RED}CONFIRM KILL: $T_NAME (PID: $T_PID)? (y/n): ${NC}"
+        read -n 1 -s confirm
+        if [[ "$confirm" == "y" || "$confirm" == "Y" ]]; then
+            kill -9 "$T_PID" 2>/dev/null
+            echo -e "\n  ${GREEN}[*] Process Terminated.${NC}"
+            sleep 0.5
+        else
+            echo -e "\n  [!] Cancelled."
+            sleep 0.5
+        fi
+        tput civis
+    elif [[ "$input" == "h" || "$input" == "H" ]]; then
+        show_help
+    elif [[ "$input" == "q" || "$input" == "Q" ]]; then
+        break
+    elif [[ "$input" == "x" || "$input" == "X" ]]; then
+        clear
+        exit 0
+    fi
+done

@@ -1,0 +1,29 @@
+[DEFAULT]
+# [NOTE] Use iptables-multiport to interact directly with the Linux kernel (Netfilter).
+# This ensures banning still works even if the firewalld service is stopped or disabled.
+banaction = iptables-multiport
+
+# [NOTE] Set action to 'action_mw' (Notice + Ban).
+# This tells Fail2ban to ban the IP and send a 'Whois' report. 
+# Crucially, this action helps maintain the service state independently of firewalld.
+action = %(action_mw)s
+
+# Global white-list (IMPORTANT: Space separated)
+ignoreip = 127.0.0.1/8 ${F2B_WHITE_IP_LIST}
+
+[sshd]
+enabled = true
+port    = ${SSH_SPEC_PORT}
+filter  = sshd
+backend = systemd
+maxretry = ${F2B_MAX_RETRY}
+bantime  = ${F2B_BAN_TIME}
+
+[xrdp-sesman]
+enabled = true
+port    = ${XRDP_PORT}
+filter  = xrdp-sesman
+logpath = /var/log/xrdp-sesman.log
+maxretry = ${F2B_MAX_RETRY}
+bantime  = ${F2B_BAN_TIME}
+

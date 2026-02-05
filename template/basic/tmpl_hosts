@@ -1,0 +1,10 @@
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+
+# # TSRI License Server
+140.126.24.16           lshc
+140.110.140.29          lstc
+140.110.117.10          lstn
+
+# # Custom hosts
+${HOSTS_LIST_TMP}

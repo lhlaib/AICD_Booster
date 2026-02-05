@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<zone>
+  <short>Public</short>
+  <description>For use in public areas. You do not trust the other computers on networks to not harm your computer. Only selected incoming connections are accepted.</description>
+  <service name="dhcpv6-client"/>
+  <service name="cockpit"/>
+  
+  ${SSH_GLOBAL_PORT_TAG}
+  ${XRDP_GLOBAL_PORT_TAG}
+
+  ${FIREWALLD_RICH_RULES}
+</zone>

@@ -1,0 +1,92 @@
+#!/bin/bash
+# ============================================================
+#  Remote Desktop - Force Logout Tool
+#  Platform: Rocky Linux 8
+# ============================================================
+
+RED='\033[1;31m'
+GREEN='\033[1;32m'
+YELLOW='\033[1;33m'
+CYAN='\033[1;36m'
+BOLD='\033[1m'
+NC='\033[0m'
+
+TARGET_USER=$(whoami)
+AUTO_CONFIRM=false
+
+# 檢查參數
+if [[ "$1" == "-y" || "$1" == "--now" ]]; then
+    AUTO_CONFIRM=true
+fi
+
+function terminate_user() {    
+    echo -e "  ${RED}[*] Terminating all tasks for $TARGET_USER...${NC}"
+    pkill -TERM -u "$TARGET_USER" 2>/dev/null
+    sleep 1
+    pkill -KILL -u "$TARGET_USER" 2>/dev/null
+
+    loginctl terminate-user "$TARGET_USER" 2>/dev/null
+
+    echo -e "  ${GREEN}[✓] Logout completed.${NC}"
+    sleep 1
+    exit 0
+}
+
+function show_help() {
+    clear
+    echo -e "${RED}======================================================${NC}"
+    echo -e "${BOLD}               HELP: FORCE LOGOUT                     ${NC}"
+    echo -e "${RED}======================================================${NC}"
+    echo ""
+    echo -e "  ${BOLD}What does this do?${NC}"
+    echo -e "  This command sends a ${RED}KILL${NC} signal to every process"
+    echo -e "  owned by ${CYAN}$TARGET_USER${NC}."
+    echo ""
+    echo -e "  ${BOLD}When to use:${NC}"
+    echo -e "  1. When your Remote Desktop is frozen."
+    echo -e "  2. When you cannot log back in because of a stale session."
+    echo -e "  3. To completely reset your environment."
+    echo ""
+    echo -e "  ${YELLOW}Note: Unsaved data in simulations or editors will be lost.${NC}"
+    echo ""
+    echo -e "  Press any key to return..."
+    read -n 1 -s
+}
+
+# 如果有 -y 參數，直接執行
+if [ "$AUTO_CONFIRM" = true ]; then
+    terminate_user
+fi
+
+# 否則進入原本的互動模式
+while true; do
+    clear
+    echo -e "${RED}======================================================${NC}"
+    echo -e "${BOLD}                FORCE LOGOUT CONFIRMATION             ${NC}"
+    echo -e "${RED}======================================================${NC}"
+    echo -e "  Target User: ${CYAN}${BOLD}$TARGET_USER${NC}"
+    echo -e "  ${YELLOW}[WARNING] This will kill ALL processes for this user.${NC}"
+    echo ""
+    echo -e "  ${BOLD}Options:${NC}"
+    echo -e "  ${CYAN}[y]${NC} Confirm Logout"
+    echo -e "  ${CYAN}[h]${NC} Help / Instruction"
+    echo -e "  ${CYAN}[q/x]${NC} Cancel and Exit"
+    echo ""
+    echo -ne "${BOLD}  Input > ${NC}"
+
+    read -n 1 -s key
+    echo ""
+
+    case "$key" in
+        y|Y)
+            terminate_user
+            ;;
+        h|H)
+            show_help
+            ;;
+        q|Q|x|X)
+            echo -e "  ${GREEN}[!] Operation cancelled.${NC}"
+            exit 0
+            ;;
+    esac
+done
