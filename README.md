@@ -7,6 +7,8 @@
   <img alt="Lmod" src="https://img.shields.io/badge/Env-Modules%20(Lmod)-6366F1">
   <img alt="LDAP/SSSD" src="https://img.shields.io/badge/Auth-LDAP%20%2B%20SSSD-0EA5E9">
   <img alt="XRDP" src="https://img.shields.io/badge/Remote-XRDP%20%2B%20Xfce-F59E0B">
+</p>
+<p align="center">
   <a href="https://github.com/lhlaib/AICD_Booster"><img alt="GitHub Stars" src="https://img.shields.io/github/stars/lhlaib/AICD_Booster?style=social"></a>
   <a href="https://github.com/lhlaib"><img alt="GitHub Follow" src="https://img.shields.io/github/followers/lhlaib?label=Follow&style=social"></a>
 </p>
@@ -16,7 +18,9 @@
   for building a <b>standardized IC design server environment</b> on <b>Rocky Linux 8</b>.
 </p>
 
-中文版說明請見： [README.zh-tw.md](.README.zh-tw.md)
+<p align="center">
+    中文版說明請見：<a href="./README.zh-tw.md"> 
+</p>
 
 ---
 
